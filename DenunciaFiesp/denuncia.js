@@ -1,75 +1,117 @@
 (function($) {
 	
-    var self = $.denuncia = new function(){};
-	
-    $.extend(self, {
+//    var self = $.denuncia = function(){};
+//    $.extend(self, {});
 
-        // parsed conversations to be saved via API            
-        self.conversations = [];
-
-        addButton: function() {
-            var menu = $(".pane-chat-header .menu.menu-horizontal");
-            var button = "<div class="menu-item"><p>Scrape</p></div>"
-            ḿenu.append(button);
-        }
-
-        scrapeMessages: function(conversations) {
-            var messages = [];
-
-            var l = 1;
-            var textNodeType = 3;
-
-            while(l > 0) {
-                l = $(".more-messages-button").click().length;
-            }
-
-            //get message bubbles
-            var bubbles = $(".bubble.bubble-text");
-            for(i = 0; i < bubbles; i++) {
-                var bubble = bubbles[i].getElementsByClassName("message-text")[0].childNodes;
-                var preText = bubble[0].childNodes;
-                var message = bubble[1].childNodes;
-
-                var text = "";
-                var timestamp = ""
-                var phone = "";
-
-                for(j = 0; j < message.length; j++) {
-                    if(message[j].nodeType == textNodeType) {
-                        text += childNodes[j];
-                    }
-                }
-
-                for(k = 0; k < preText.length; k++) {
-                    if(preText[k].nodeType == textNodeType && preText[k].indexOf("/") > -1) {
-                        timestamp = preText[k];
-                    } else if(preText[k].nodeType == textNodeType && preText[k].indexOf("+") > -1) {
-                        phone = preText[k];
-                    }
-                }
-
-                message = {
-                    "texto": text,
-                    "nomeContato": "",
-                    "numeroTelefone": phone,
-                    "dataEnvio": timestamp,
-                };
-
-                messages.push(message);
-            }
-
-            conversations.push(messages);
-
-        },
-
-        saveMessages: function(conversations) {
-            //send to API
-        }
-
-    });
-
-    //Run on jQuery ready
+    //run when jQuery is ready
     $(function(){
-        self.addButton();
+        if(window.location.href.indexOf("web.whatsapp.com") < 0) {
+            console.log("not whatApp");
+            return;
+        }
+
+        console.log("whatsApp plugin running");
+
+        //wait for page to load
+        setTimeout(function(){
+
+            // array of parsed conversations to be saved via API            
+            var conversations = [];
+
+            var scrapeMessages = function() {
+                var messages = [];
+                var textNodeType = 3;
+
+                var load = $(".more-messages-button");
+                while(load != null) {
+                    load.click();
+                    load = $(".more-messages-button");
+                }
+
+                //get message bubbles
+                var bubbles = $(".message-list");
+                bubbles = bubbles.getElementsByClassName("bubble-text");
+                for(i = 0; i < bubbles.length; i++) {
+                    var bubble = bubbles.childNodes[i].getElementsByClassName("message-text");
+                    var preText = bubble[0].childNodes;
+                    var message = bubble[1].childNodes;
+
+                    var text = "";
+                    var timestamp = "";
+                    var phone = "";
+
+                    for(j = 0; j < message.length; j++) {
+                        if(message[j].nodeType == textNodeType) {
+                            text += childNodes[j];
+                        }
+                    }
+
+                    for(k = 0; k < preText.length; k++) {
+                        if(preText[k].nodeType == textNodeType && preText[k].indexOf("/") > -1) {
+                            timestamp = preText[k];
+                        } else if(preText[k].nodeType == textNodeType && preText[k].indexOf("+") > -1) {
+                            phone = preText[k];
+                        }
+                    }
+
+                    message = {
+                        "texto": text,
+                        "nomeContato": "",
+                        "numeroTelefone": phone,
+                        "dataEnvio": timestamp,
+                    };
+
+                    console.log(message);
+
+                    messages.push(message);
+                }
+
+                conversations.push(messages);
+                console.log("scraping conversation " + i);
+
+            };
+
+            var saveConversations = function() {
+                var jsonFile = require('jsonfile');
+                jsonFile.writeFile ("conversations.json", JSON.stringify(conversations), function(err) {
+                    console.log(err);
+                });
+            };
+
+            var scrapeConversations = function() {
+                var chatList = $(".infinite-list-viewport").children;
+                chatList[0].click();
+                for(i = 0; i < chatList.length; i++) {
+                    chatList[i].click();
+                    scrapeMessages(conversations);
+                }
+                saveConversations(conversations);
+            };
+
+            var uploadConversations = function() {
+                // $.post("bla", function(data, conversations){
+                //     alert("Dados foram enviados ao servidor e serão analisado");
+                // });
+            };
+
+            var startScraping = function() {
+                var bubbles = $(".message-list");
+                if(typeof bubbles == "undefined") {
+                    alert("Não foi selecionada uma conversa");
+                } else {
+                    console.log("oi");
+                    // scrapeMessages();
+                }
+            };
+
+            var addHeader = function(){
+                var div = $(".app .two");
+                var header = "<div id='denuncia'>Selecione uma conversa e clique <a onClick='startScraping(); return true;'>aqui</a> para vasculhá-la</div>";
+                div.prepend(header);
+            };
+
+            addHeader();
+
+        }, 0);
     });
 })(jQuery);
