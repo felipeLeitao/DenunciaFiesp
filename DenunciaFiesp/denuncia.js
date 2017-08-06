@@ -1,115 +1,130 @@
-//nVampeta 
 (function($) {
 	
-    var self = $.nVampeta = new function(){};
-	
-    $.extend(self, {
+//    var self = $.denuncia = function(){};
+//    $.extend(self, {});
 
-    	nVampetaBackgrounds : [
-    		'http://www.away.com.br/nvampeta/bg1.png'
-    	],
-
-        nVampetaImgs : [
-            'http://i.imgur.com/meT1G7T.jpg',
-            'http://i.imgur.com/scpspdR.jpg',
-            'http://i.imgur.com/097JazL.jpg',
-            'http://i.imgur.com/8CzMjuC.jpg',
-            'http://i.imgur.com/wSDz4VJ.jpg',
-            'http://i.imgur.com/B8tOwat.jpg',
-            'http://i.imgur.com/TVmRwJ4.jpg',
-            'http://i.imgur.com/CM1nPI8.jpg',
-            'http://i.imgur.com/xhcfSst.jpg',
-            'http://i.imgur.com/rangHmZ.jpg',
-            'http://i.imgur.com/edVhcjS.jpg',
-            'http://i.imgur.com/WdPhUqm.jpg',
-            'http://i.imgur.com/n1BBZlf.jpg',
-            'http://i.imgur.com/xIEoPac.jpg',
-            'http://i.imgur.com/yy3DwnX.gif',
-            'http://i.imgur.com/hd0BUJm.jpg',
-            'http://i.imgur.com/HE4dSil.jpg',
-            'http://i.imgur.com/A3JJUut.jpg',
-            'http://i.imgur.com/i4XKBvD.jpg',
-            'http://i.imgur.com/XveMAVe.jpg',
-            'http://i.imgur.com/epuUjge.jpg',
-            'http://i.imgur.com/IT1VLti.jpg',
-            'http://i.imgur.com/l412AZq.jpg',
-            'http://i.imgur.com/sPdWGaK.jpg',
-            'http://i.imgur.com/PQ3bg1q.jpg',
-            'http://i.imgur.com/DeQ0qo3.jpg',
-            'http://i.imgur.com/wFi3HXs.jpg',
-            'http://i.imgur.com/PCm1v57.jpg',
-            'http://i.imgur.com/Oxs2AHZ.jpg',
-            'http://i.imgur.com/SKKwYtQ.jpg',
-            'http://i.imgur.com/rfSvENU.jpg',
-            'http://i.imgur.com/qguMH00.jpg',
-            'http://i.imgur.com/4Jh46kV.jpg'
-        ],
-
-        handleImages : function (lstImgs, time)
-        {
-            $.each($('img'), function(i,item) { 
-                //Skip if image is already replaced
-                if($.inArray($(item).attr('src'), lstImgs) == -1)
-                {
-					var h = $(item).height();
-					var w = $(item).width();
-					
-					//If image loaded
-					if(h > 0 && w > 0)
-					{
-						//Replace
-						$(item).css('width', w + 'px').css('height', h + 'px');
-						$(item).attr('src', lstImgs[Math.floor(Math.random() * lstImgs.length)]); 
-					}
-					else
-					{
-						//Replace when loaded
-						$(item).load(function(){
-							//Prevent 'infinite' loop
-							if($.inArray($(item).attr('src'), lstImgs) == -1)
-							{
-								var h = $(item).height();
-								var w = $(item).width();
-								$(item).css('width', w + 'px').css('height', h + 'px');
-								$(item).attr('src', lstImgs[Math.floor(Math.random() * lstImgs.length)]); 
-							}
-						});
-					}
-				}
-            });
-
-            //Keep replacing
-            if (time > 0) {
-                setTimeout(function () { self.handleImages(lstImgs, time); }, time);
-            }
-        },
-
-        handleLogo : function (bgImgs, time)
-        {
-			$backgroundImages = $(
-            	'[class*=logo], [class*=header], [id*=header], [id*=logo],' +
-            	'[class*=logo] span, [class*=header] span, [id*=header] span, [id*=logo] span,' +
-            	'[class*=logo] h1, [class*=header] h1, [id*=header] h1, [id*=logo] h1,'+
-            	'[class*=logo] a, [class*=header] a, [id*=header] a, [id*=logo] a'
-            	)
-            	.filter(function() {
-            		backgroundImg = $(this).css('background-image');
-            		return backgroundImg && backgroundImg != 'none';
-            	}
-            );
-
-            $backgroundImages.each(function(i, item) {
-            	$(item).css('background-image', 'url(' + bgImgs[Math.floor(Math.random() * bgImgs.length)] + ')');
-            	$(item).css('background-position', '0 0');
-            	$(item).css('background-repeat', 'no-repeat');
-            	$(item).css('background-size', 'contain');
-            });
-        }
-    });
-
-    //Run on jQuery ready
+    //run when jQuery is ready
     $(function(){
-        self.handleImages(self.nVampetaImgs, 3000);
-     	self.handleLogo(self.nVampetaBackgrounds, 3000);
+        if(window.location.href.indexOf("web.whatsapp.com") < 0) {
+            console.log("not whatApp");
+            return;
+        }
+
+        //wait for page to load
+        setTimeout(function(){
+            console.log("whatsApp plugin running");
+
+            // array of parsed conversations to be saved via API            
+            var conversations = [];
+
+            var addHeader = function(){
+                var div = $(".app .two");
+                var header = "<div id='denuncia'>Selecione uma conversa e clique <a onClick='startScraping(); return true;'>aqui</a> para vasculhá-la</div>";
+                div.prepend(header);
+            };
+
+            var scrapeMessages = function() {
+                console.log("begin scraping");
+                var messages = [];
+                var textNodeType = 3;
+
+                var load = $(".more-messages-button");
+                if(load == null) {
+                    console.log(load + " " + load == null);
+                    console.log("try again");
+                    scrapeMessages();
+                } 
+
+                // gambiarras pra tentar lidar com a assincronicidade 
+                while(load !== null && typeof load !== "undefined") {
+                    load.click();
+                    load = $(".more-messages-button");
+                }
+
+                //get message bubbles
+                var bubbles = document.getElementsByClassName("bubble-text");
+                console.log(bubbles);
+                for(var i = 0; i < bubbles.length; i++) {
+                    var bubble = bubbles[i].getElementsByClassName("message-text");
+                    var preText = bubble[0].getElementsByClassName("message-pre-text")[0];
+                    var message = bubble[0].getElementsByClassName("selectable-text")[0];
+
+                    // document.getElementsByClassName("bubble-text")[0].getElementsByClassName("message-text")[0].getElementsByClassName("message-pre-text");
+
+                    if(message == null) {
+                        continue;
+                    }
+
+                    var text = "";
+                    var timestamp = "";
+                    var phone = "";
+
+                    for(var j = 0; j < message.childNodes.length; j++) {
+                        if(message.childNodes[j].nodeType == textNodeType) {
+                            text += message.childNodes[j].nodeValue;
+                        }
+                    }
+
+                    if(preText !== null && typeof preText !== "undefined") {
+                        for(var k = 0; k < preText.childNodes.length; k++) {
+                            if(preText.childNodes[k].nodeType == textNodeType && preText.childNodes[k].nodeValue.indexOf("/") > -1) {
+                                timestamp = preText.childNodes[k].nodeValue;
+                            } else if(preText.childNodes[k].nodeType == textNodeType && preText.childNodes[k].nodeValue.indexOf("+") > -1) {
+                                phone = preText.childNodes[k].nodeValue;
+                            }
+                        }
+                    }
+
+                    var msg = {
+                        "texto": text,
+                        "nomeContato": "",
+                        "numeroTelefone": phone,
+                        "dataEnvio": timestamp,
+                    };
+
+                    messages.push(msg);
+                }
+
+                conversations.push(messages);
+                console.log(conversations);
+
+            };
+
+            var saveConversations = function() {
+                var jsonFile = require('jsonfile');
+                jsonFile.writeFile ("conversations.json", JSON.stringify(conversations), function(err) {
+                    console.log(err);
+                });
+            };
+
+            var scrapeConversations = function() {
+                var chatList = $(".infinite-list-viewport").children;
+                chatList[0].click();
+                for(i = 0; i < chatList.length; i++) {
+                    chatList[i].click();
+                    scrapeMessages(conversations);
+                }
+                saveConversations(conversations);
+            };
+
+            var uploadConversations = function() {
+                $.post("bla", function(data, conversations){
+                    console.log("Dados foram enviados ao servidor e serão analisados");
+                });
+            };
+
+            var startScraping = function() {
+                var bubbles = $(".message-list");
+                if(typeof bubbles == "undefined") {
+                    alert("Não foi selecionada uma conversa");
+                } else {
+                    console.log("scrape");
+                    scrapeMessages();
+                }
+            };
+
+            startScraping();
+
+        }, 25000);
     });
 })(jQuery);
