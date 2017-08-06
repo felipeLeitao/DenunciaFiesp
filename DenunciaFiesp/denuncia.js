@@ -39,10 +39,6 @@
                 while(load !== null && typeof load !== "undefined") {
                     load.click();
                     load = $(".more-messages-button");
-                    var r = 0;
-                    while(r < 1000){
-                        r++;
-                    }
                 }
 
                 //get message bubbles
