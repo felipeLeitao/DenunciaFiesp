@@ -25,11 +25,19 @@
             };
 
             var scrapeMessages = function() {
+                console.log("begin scraping");
                 var messages = [];
                 var textNodeType = 3;
 
                 var load = $(".more-messages-button");
-                while(load != null && typeof load != "undefined") {
+
+                if(load == null) {
+                    setTimeout(function(){
+                        scrapeMessages();
+                    }, 2000);
+                } 
+
+                while(load !== null && typeof load !== "undefined") {
                     console.log("oi");
                     load.click();
                     load = $(".more-messages-button");
@@ -111,7 +119,7 @@
                 }
             };
 
-            startScraping();
+            // startScraping();
 
         }, 14000);
     });
