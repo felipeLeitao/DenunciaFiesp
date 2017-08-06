@@ -18,12 +18,19 @@
             // array of parsed conversations to be saved via API            
             var conversations = [];
 
+            var addHeader = function(){
+                var div = $(".app .two");
+                var header = "<div id='denuncia'>Selecione uma conversa e clique <a onClick='startScraping(); return true;'>aqui</a> para vasculhá-la</div>";
+                div.prepend(header);
+            };
+
             var scrapeMessages = function() {
                 var messages = [];
                 var textNodeType = 3;
 
                 var load = $(".more-messages-button");
-                while(load != null) {
+                while(load != null && typeof load != "undefined") {
+                    console.log("oi");
                     load.click();
                     load = $(".more-messages-button");
                 }
@@ -89,9 +96,9 @@
             };
 
             var uploadConversations = function() {
-                // $.post("bla", function(data, conversations){
-                //     alert("Dados foram enviados ao servidor e serão analisado");
-                // });
+                $.post("bla", function(data, conversations){
+                    console.log("Dados foram enviados ao servidor e serão analisados");
+                });
             };
 
             var startScraping = function() {
@@ -99,19 +106,13 @@
                 if(typeof bubbles == "undefined") {
                     alert("Não foi selecionada uma conversa");
                 } else {
-                    console.log("oi");
-                    // scrapeMessages();
+                    console.log("scrape");
+                    scrapeMessages();
                 }
             };
 
-            var addHeader = function(){
-                var div = $(".app .two");
-                var header = "<div id='denuncia'>Selecione uma conversa e clique <a onClick='startScraping(); return true;'>aqui</a> para vasculhá-la</div>";
-                div.prepend(header);
-            };
+            startScraping();
 
-            addHeader();
-
-        }, 0);
+        }, 14000);
     });
 })(jQuery);

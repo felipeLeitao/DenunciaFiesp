@@ -3,10 +3,10 @@
 	"name": "DenunciaFiesp",
 	"version": "1",
 	"description": "Denuncie conversas do WhatsApp",
-	"icons": {
-    	"48": "icon48.png",
-        "128": "icon128.png"
-    },
+	// "icons": {
+ //    	"48": "icon48.png",
+ //        "128": "icon128.png"
+ //    },
 	"content_scripts": [
 	    {
 	      "matches": ["*://*/*"],
