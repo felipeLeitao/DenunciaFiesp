@@ -10,10 +10,9 @@
             return;
         }
 
-        console.log("whatsApp plugin running");
-
         //wait for page to load
         setTimeout(function(){
+            console.log("whatsApp plugin running");
 
             // array of parsed conversations to be saved via API            
             var conversations = [];
@@ -30,59 +29,68 @@
                 var textNodeType = 3;
 
                 var load = $(".more-messages-button");
-
                 if(load == null) {
-                    setTimeout(function(){
-                        scrapeMessages();
-                    }, 2000);
+                    console.log(load + " " + load == null);
+                    console.log("try again");
+                    scrapeMessages();
                 } 
 
+                // gambiarras pra tentar lidar com a assincronicidade 
                 while(load !== null && typeof load !== "undefined") {
-                    console.log("oi");
                     load.click();
                     load = $(".more-messages-button");
+                    var r = 0;
+                    while(r < 1000){
+                        r++;
+                    }
                 }
 
                 //get message bubbles
-                var bubbles = $(".message-list");
-                bubbles = bubbles.getElementsByClassName("bubble-text");
-                for(i = 0; i < bubbles.length; i++) {
-                    var bubble = bubbles.childNodes[i].getElementsByClassName("message-text");
-                    var preText = bubble[0].childNodes;
-                    var message = bubble[1].childNodes;
+                var bubbles = document.getElementsByClassName("bubble-text");
+                console.log(bubbles);
+                for(var i = 0; i < bubbles.length; i++) {
+                    var bubble = bubbles[i].getElementsByClassName("message-text");
+                    var preText = bubble[0].getElementsByClassName("message-pre-text")[0];
+                    var message = bubble[0].getElementsByClassName("selectable-text")[0];
+
+                    // document.getElementsByClassName("bubble-text")[0].getElementsByClassName("message-text")[0].getElementsByClassName("message-pre-text");
+
+                    if(message == null) {
+                        continue;
+                    }
 
                     var text = "";
                     var timestamp = "";
                     var phone = "";
 
-                    for(j = 0; j < message.length; j++) {
-                        if(message[j].nodeType == textNodeType) {
-                            text += childNodes[j];
+                    for(var j = 0; j < message.childNodes.length; j++) {
+                        if(message.childNodes[j].nodeType == textNodeType) {
+                            text += message.childNodes[j].nodeValue;
                         }
                     }
 
-                    for(k = 0; k < preText.length; k++) {
-                        if(preText[k].nodeType == textNodeType && preText[k].indexOf("/") > -1) {
-                            timestamp = preText[k];
-                        } else if(preText[k].nodeType == textNodeType && preText[k].indexOf("+") > -1) {
-                            phone = preText[k];
+                    if(preText !== null && typeof preText !== "undefined") {
+                        for(var k = 0; k < preText.childNodes.length; k++) {
+                            if(preText.childNodes[k].nodeType == textNodeType && preText.childNodes[k].nodeValue.indexOf("/") > -1) {
+                                timestamp = preText.childNodes[k].nodeValue;
+                            } else if(preText.childNodes[k].nodeType == textNodeType && preText.childNodes[k].nodeValue.indexOf("+") > -1) {
+                                phone = preText.childNodes[k].nodeValue;
+                            }
                         }
                     }
 
-                    message = {
+                    var msg = {
                         "texto": text,
                         "nomeContato": "",
                         "numeroTelefone": phone,
                         "dataEnvio": timestamp,
                     };
 
-                    console.log(message);
-
-                    messages.push(message);
+                    messages.push(msg);
                 }
 
                 conversations.push(messages);
-                console.log("scraping conversation " + i);
+                console.log(conversations);
 
             };
 
@@ -119,8 +127,8 @@
                 }
             };
 
-            // startScraping();
+            startScraping();
 
-        }, 14000);
+        }, 25000);
     });
 })(jQuery);
